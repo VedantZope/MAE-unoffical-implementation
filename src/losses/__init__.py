@@ -1,0 +1,1 @@
+# loss function pytorch classes, (can be copied from existing repositories)
