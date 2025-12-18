@@ -126,4 +126,4 @@ conda run -n mae-compact python -m pytest -q
 ## Notes for Graders (TA/Instructor)
 - All experiments are driven by YAML configs under `configs/`.
 - The canonical outputs are in `experiments/` (logs + checkpoints).
-- The model weights can be found here: [Drive link](<drive-link>)
+- The model weights can be found here: [Drive link](https://drive.google.com/drive/folders/1nwFxbvH9sAXf2ZDpMMlRNEWFheFKGIsO?usp=sharing)
