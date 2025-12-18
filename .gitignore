@@ -2,8 +2,10 @@
 data/
 report.*
 experiments/mae_pretrained/*.pth
+notebooks/data
 experiments/debug_mae/*.pth
 wandb/
+configs/_tmp_*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

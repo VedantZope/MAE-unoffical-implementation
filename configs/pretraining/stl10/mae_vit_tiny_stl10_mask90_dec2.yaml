@@ -1,0 +1,40 @@
+dataset: stl10
+data_root: data
+
+img_size: 224
+patch_size: 16
+
+embed_dim: 192
+encoder_depth: 12
+encoder_heads: 3
+encoder_mlp_ratio: 4.0
+dropout: 0.0
+
+decoder_dim: 96
+decoder_depth: 2
+decoder_heads: 3
+decoder_mlp_ratio: 4.0
+
+mask_ratio: 0.9
+
+batch_size: 1024
+epochs: 100
+lr: 0.0006
+min_lr: 0.0
+warmup_epochs: 10
+weight_decay: 0.05
+
+amp: true
+grad_accum_steps: 1
+
+num_workers: 12
+log_interval: 10
+output_dir: experiments/mae_pretrained
+seed: 42
+norm_pix_loss: true
+
+use_wandb: true
+wandb_project: mae-compact
+wandb_run_name: mae_vit_tiny_stl10_m90_d2
+wandb_tags: ["pretrain", "vit_tiny", "stl10", "mask90", "dec2"]
+wandb_mode: offline

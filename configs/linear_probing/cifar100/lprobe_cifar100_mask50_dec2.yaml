@@ -1,0 +1,31 @@
+dataset: cifar100
+data_root: data
+img_size: 224
+eval_split: test
+
+ckpt_path: experiments/mae_pretrained/mae_cifar100_vit_tiny_mask50_dec2.pth
+
+patch_size: 16
+embed_dim: 192
+encoder_depth: 12
+encoder_heads: 3
+encoder_mlp_ratio: 4.0
+dropout: 0.0
+
+pool: cls
+batch_size: 256
+epochs: 50
+lr: 0.1
+momentum: 0.9
+weight_decay: 0.0
+num_workers: 8
+
+output_dir: experiments/linear_probe
+run_name: lprobe_cifar100_mask50_dec2_cls
+
+use_wandb: true
+wandb_project: mae-compact
+wandb_run_name: lprobe_cifar100_mask50_dec2_cls
+wandb_tags: ["linear_probe", "cifar100", "mask50", "dec2"]
+wandb_mode: offline
+

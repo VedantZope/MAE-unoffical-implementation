@@ -91,9 +91,16 @@ def get_dataloader(
     data_root: str = "data",
     img_size: int = 224,
     pin_memory: bool = True,
+    train_augment: bool = False,
 ):
     # is_pretrain =  True (returns images) & is_pretrain=False (returns image, label)
-    tfm = _build_transforms(is_pretrain=is_pretrain, img_size=img_size)
+    tfm_is_pretrain = bool(is_pretrain)
+    if split == "train" and (not is_pretrain) and train_augment:
+        # For supervised training (linear probe / fine-tune), we may want train-time augmentation
+        # while still returning labels.
+        tfm_is_pretrain = True
+
+    tfm = _build_transforms(is_pretrain=tfm_is_pretrain, img_size=img_size)
     ds = _build_dataset(dataset_name, split, data_root, tfm, is_pretrain=is_pretrain)
 
     if is_pretrain:

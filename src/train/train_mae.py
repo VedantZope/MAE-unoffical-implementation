@@ -73,14 +73,19 @@ def maybe_init_wandb(cfg_dict: Dict[str, Any]):
     env_mode = os.environ.get("WANDB_MODE")
     mode = env_mode if env_mode is not None else cfg_dict.get("wandb_mode", None)
 
-    return wandb.init(
-        project=cfg_dict.get("wandb_project", "mae-compact"),
-        entity=cfg_dict.get("wandb_entity", None),
-        name=cfg_dict.get("wandb_run_name", None),
-        tags=cfg_dict.get("wandb_tags", None),
-        mode=mode,  # "online" | "offline" | "disabled" | None
-        config=cfg_dict,
-    )
+    try:
+        return wandb.init(
+            project=cfg_dict.get("wandb_project", "mae-compact"),
+            entity=cfg_dict.get("wandb_entity", None),
+            name=cfg_dict.get("wandb_run_name", None),
+            tags=cfg_dict.get("wandb_tags", None),
+            mode=mode,  # "online" | "offline" | "disabled" | None
+            config=cfg_dict,
+        )
+    except Exception as e:
+        print(f"[WARN] wandb.init failed ({type(e).__name__}): {e}")
+        print("[WARN] Proceeding without wandb logging.")
+        return None
 
 
 def build_warmup_cosine_scheduler(
@@ -204,6 +209,19 @@ def train_one_epoch(
                         "train/step": global_step + steps_done,
                     }
                 )
+
+    # If we stopped mid accumulation (e.g., max_steps_per_epoch or epoch end),
+    # flush the remaining gradients so we don't silently drop the last partial batch group.
+    if steps_done > 0 and (steps_done % grad_accum_steps) != 0:
+        if amp and device.type == "cuda":
+            assert scaler is not None
+            scaler.step(optimizer)
+            scaler.update()
+        else:
+            optimizer.step()
+        optimizer.zero_grad(set_to_none=True)
+        if scheduler is not None:
+            scheduler.step()
 
     return total_loss / max(int(steps_done), 1)
 
@@ -334,7 +352,11 @@ def main():
 
     scaler = torch.cuda.amp.GradScaler(enabled=bool(cfg.amp and device.type == "cuda"))
 
-    ckpt_name = f"mae_{cfg.dataset}_vit_tiny_mask{int(cfg.mask_ratio*100)}_dec{cfg.decoder_depth}.pth"
+    ckpt_name = (
+        f"mae_{cfg.dataset}_vit_tiny_"
+        f"img{cfg.img_size}_p{cfg.patch_size}_"
+        f"mask{int(cfg.mask_ratio*100)}_dec{cfg.decoder_depth}.pth"
+    )
     ckpt_path = os.path.join(cfg.output_dir, ckpt_name)
 
     for epoch in range(1, cfg.epochs + 1):

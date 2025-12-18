@@ -1,0 +1,39 @@
+dataset: cifar100
+data_root: data
+
+img_size: 224
+patch_size: 16
+
+# Encoder config (must match MAE pretraining)
+embed_dim: 192
+encoder_depth: 12
+encoder_heads: 3
+encoder_mlp_ratio: 4.0
+dropout: 0.0
+
+ckpt_path: experiments/mae_pretrained/mae_cifar100_vit_tiny_img224_p16_mask90_dec2.pth
+
+# Fine-tune setup
+pool: cls
+train_augment: true
+batch_size: 256
+epochs: 50
+warmup_epochs: 5
+
+# AdamW (separate lr for encoder vs head)
+lr: 0.0003
+encoder_lr_scale: 0.1
+min_lr: 0.0
+weight_decay: 0.05
+
+amp: true
+num_workers: 12
+output_dir: experiments/finetune
+run_name: finetune_cifar100_mask90_dec2
+
+use_wandb: true
+wandb_project: mae-compact
+wandb_run_name: finetune_cifar100_mask90_dec2
+wandb_tags: ["finetune", "cifar100", "mask90", "dec2"]
+wandb_mode: offline
+

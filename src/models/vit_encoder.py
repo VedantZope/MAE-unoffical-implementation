@@ -79,3 +79,26 @@ class ViTEncoder(nn.Module):
         x = self.encoder(x)
         x = self.norm(x)
         return x
+
+    def forward_visible(self, tokens_visible: torch.Tensor, idx_keep: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass for MAE-style visible tokens with correct positional embeddings.
+
+        tokens_visible: (B, N_visible, D) patch embeddings (no pos added yet)
+        idx_keep:      (B, N_visible) indices of kept patches in original patch order [0..N_patches-1]
+        """
+        B, N_visible, D = tokens_visible.shape
+
+        # Gather positional embeddings for the kept patch indices (excluding CLS pos).
+        pos_patches = self.pos_embed[:, 1:, :].expand(B, -1, -1)  # (B, N_patches, D)
+        pos_visible = torch.gather(pos_patches, dim=1, index=idx_keep.unsqueeze(-1).expand(-1, -1, D))
+
+        x_vis = tokens_visible + pos_visible
+
+        cls_tokens = self.cls_token.expand(B, 1, -1)
+        cls_tokens = cls_tokens + self.pos_embed[:, :1, :]
+
+        x = torch.cat((cls_tokens, x_vis), dim=1)
+        x = self.encoder(x)
+        x = self.norm(x)
+        return x
