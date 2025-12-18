@@ -1,27 +1,38 @@
-# MAE-unoffical-implementation
+# Compact MAE Reproduction (PyTorch)
 
+This repo is a compact reproduction of *Masked Autoencoders Are Scalable Vision Learners* (He et al., 2021).
+We implement MAE pretraining and evaluate representation quality via:
+- **Linear probing** (freeze encoder, train linear head)
+- **Fine-tuning** (train encoder + head end-to-end)
 
-example project structure:
+We run controlled ablations over:
+- **Mask ratio**: `{0.50, 0.75, 0.90}`
+- **Decoder depth**: `{2, 4}` (decoder width set to ~half encoder width)
+
+Experiments in this repo target **CIFAR-100** and **STL-10** (with optional Tiny-ImageNet support).
+
+---
+
+## Quickstart
+
+### 1) Environment
+We provide conda environments:
+- `environment-cuda.yml` (GPU)
+- `environment-cpu.yml` (CPU)
+
+Example:
+```bash
+conda env create -f environment-cuda.yml
+conda activate mae-compact
 ```
-mae-project/
-│
-├── README.md
-├── requirements.txt
-├── setup.py                     # optional
-├── .gitignore
-│
-├── configs/
-│   ├── mae_vit_tiny_tinyimagenet_mask75_dec2.yaml
-│   ├── mae_vit_tiny_mask50.yaml
-│   ├── mae_vit_tiny_mask90.yaml
-│   ├── mae_decoder_depth2.yaml
-│   ├── mae_decoder_depth4.yaml
-│   └── linear_probe_cifar100.yaml
-│
-├── data/
-│   └── (empty; user downloads datasets here)
-│
-Tiny-ImageNet expected layout (no auto-download in this repo):
+
+### 2) Datasets
+All datasets are stored under `data/`.
+- CIFAR-100: auto-download (via torchvision)
+- STL-10: auto-download (via torchvision; MAE pretraining uses `train+unlabeled`)
+- Tiny-ImageNet: **no auto-download** (see layout below)
+
+Tiny-ImageNet expected layout:
 ```
 data/
   tiny-imagenet-200/
@@ -31,63 +42,130 @@ data/
     val/val_annotations.txt
 ```
 
-├── src/
-│   ├── __init__.py
-│   │
-│   ├── data/
-│   │   ├── __init__.py
-│   │   ├── cifar100.py
-│   │   ├── stl10.py
-│   │   ├── tiny_imagenet.py
-│   │   └── factory.py
-│   │
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── patch_embed.py
-│   │   ├── vit_encoder.py
-│   │   ├── masking.py
-│   │   ├── mae_decoder.py
-│   │   ├── mae.py                # MAE wrapper that ties encoder+decoder
-│   │   └── linear_probe_head.py
-│   │
-│   ├── losses/
-│   │   ├── __init__.py
-│   │   └── mae_loss.py
-│   │
-│   ├── train/
-│   │   ├── __init__.py
-│   │   ├── train_mae.py          # pretraining script
-│   │   ├── train_linear_probe.py
-│   │   └── train_finetune.py
-│   │
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   ├── logger.py
-│   │   ├── checkpoint.py
-│   │   ├── seed.py
-│   │   └── distributed.py        # optional, if using multi-GPU
-│   │
-│   └── eval/
-│       ├── __init__.py
-│       ├── run_linear_probe.py
-│       └── run_finetune_eval.py
-│
-├── experiments/
-│   ├── logs/                     # training logs, wandb/tb outputs
-│   ├── mae_pretrained/           # encoder+decoder checkpoints
-│   ├── linear_probe/             # trained linear classifiers
-│   └── finetune/                 # fine-tuned models
-│
-├── analysis/
-│   ├── mae_reconstruction_demo.ipynb
-│   ├── ablation_plots.ipynb
-│   └── metrics.csv               # accuracy table for report
-│
-└── report/
-    ├── final_report.pdf
-    ├── figures/
-    │   ├── recon_examples.png
-    │   ├── mask_ratio_plot.png
-    │   └── decoder_depth_plot.png
-    └── notes.md
+### 3) Run the full pipeline
+All scripts assume you already activated the conda env and run `python` directly.
+Logging:
+- stdout/stderr logs: `experiments/logs/*.log`
+- checkpoints: `experiments/mae_pretrained/`, `experiments/linear_probe/`, `experiments/finetune/`
+- W&B is forced to **offline** by default in launchers (stored under `./wandb/`)
+
+---
+
+## Repo Layout (current)
+Key directories:
 ```
+configs/
+  pretraining/{cifar100,stl10}/...yaml
+  linear_probing/{cifar100,stl10}/...yaml
+  finetuning/{cifar100,stl10}/...yaml
+scripts/
+  launch_*_ablations.sh
+  launch_linear_probe_from_ckpts.sh
+  launch_finetune_best.sh
+  launch_finetune_remaining.sh
+src/
+  train/train_mae.py
+  train/train_linear_probe.py
+  train/train_finetune.py
+  models/{vit_encoder.py,mae.py,mae_decoder.py,masking.py}
+  data/{factory.py,cifar100.py,stl10.py,tiny_imagenet.py}
+notebooks/
+  reconstruction_demo.ipynb
+  analysis_notebook.ipynb
+experiments/
+  logs/            # logs for each run
+  mae_pretrained/  # MAE checkpoints
+  linear_probe/    # trained linear heads
+  finetune/        # fine-tuned models
+```
+
+---
+
+## Pretraining (MAE)
+Run a single config:
+```bash
+python -u -m src.train.train_mae --config configs/pretraining/cifar100/mae_vit_tiny_cifar100_mask75_dec2.yaml
+```
+
+Run all 6 CIFAR-100 ablations in parallel (skips GPU 2 by default):
+```bash
+bash scripts/launch_cifar100_ablations.sh
+```
+
+Run all 6 STL-10 ablations in parallel (skips GPU 2 by default):
+```bash
+bash scripts/launch_stl10_ablations.sh
+```
+
+Override GPU list (comma or space separated):
+```bash
+GPU_IDS="0,1,3,4,5,6" bash scripts/launch_cifar100_ablations.sh
+```
+
+Outputs:
+- checkpoints: `experiments/mae_pretrained/*.pth`
+- logs: `experiments/logs/mae_vit_tiny_*_mask*_dec*.log`
+
+---
+
+## Linear Probing
+Run a single YAML:
+```bash
+python -u -m src.train.train_linear_probe --config configs/linear_probing/cifar100/lprobe_cifar100_mask75_dec2.yaml
+```
+
+Run 6 probes (one per checkpoint) in parallel (skips GPU 2 by default):
+```bash
+bash scripts/launch_linear_probe_from_ckpts.sh cifar100
+bash scripts/launch_linear_probe_from_ckpts.sh stl10
+```
+
+Outputs:
+- logs: `experiments/logs/*_lprobe_*.log`
+- best linear heads: `experiments/linear_probe/*.pth`
+
+---
+
+## Fine-tuning
+Run a single YAML:
+```bash
+python -u -m src.train.train_finetune --config configs/finetuning/cifar100/finetune_cifar100_mask75_dec4.yaml
+```
+
+Run a smaller set (best configs) in parallel:
+```bash
+bash scripts/launch_finetune_best.sh
+```
+
+Run the remaining grid in parallel (skips GPU 2 by default):
+```bash
+bash scripts/launch_finetune_remaining.sh
+```
+
+Outputs:
+- logs: `experiments/logs/finetune_*.log`
+- checkpoints: `experiments/finetune/*.pth`
+
+---
+
+## Qualitative Reconstructions
+Use `notebooks/reconstruction_demo.ipynb` to visualize:
+- original image
+- masked input
+- **composite reconstruction** (visible patches from input + masked patches from model)
+
+---
+
+## Testing
+Run unit tests in the provided conda env:
+```bash
+conda run -n mae-compact python -m pytest -q
+```
+
+---
+
+## Notes for Graders (TA/Instructor)
+- All experiments are driven by YAML configs under `configs/`.
+- The canonical outputs are in `experiments/` (logs + checkpoints).
+- The report source lives in `../ESE5460FinalProject/` (LaTeX).
+- W&B is used for tracking but defaults to **offline** mode so runs do not require cloud syncing.

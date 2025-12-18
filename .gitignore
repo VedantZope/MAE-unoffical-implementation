@@ -6,6 +6,7 @@ notebooks/data
 experiments/debug_mae/*.pth
 wandb/
 configs/_tmp_*
+scripts/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
