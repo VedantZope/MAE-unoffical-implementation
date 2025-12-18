@@ -30,17 +30,7 @@ conda activate mae-compact
 All datasets are stored under `data/`.
 - CIFAR-100: auto-download (via torchvision)
 - STL-10: auto-download (via torchvision; MAE pretraining uses `train+unlabeled`)
-- Tiny-ImageNet: **no auto-download** (see layout below)
 
-Tiny-ImageNet expected layout:
-```
-data/
-  tiny-imagenet-200/
-    wnids.txt
-    train/<wnid>/images/*.JPEG
-    val/images/*.JPEG
-    val/val_annotations.txt
-```
 
 ### 3) Run the full pipeline
 All scripts assume you already activated the conda env and run `python` directly.
