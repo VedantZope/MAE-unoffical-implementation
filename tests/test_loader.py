@@ -61,10 +61,34 @@ def check_data_dir():
     else:
         print("data/ does not exist yet (will be created on download)")
 
+def check_tiny_imagenet_if_present():
+    base = os.path.join("data", "tiny-imagenet-200")
+    if not os.path.isdir(base):
+        print("Tiny-ImageNet not found under data/tiny-imagenet-200 (skipping)")
+        return
+
+    loader = get_dataloader(
+        dataset_name="tiny-imagenet",
+        split="val",
+        batch_size=4,
+        num_workers=0,
+        is_pretrain=False,
+        data_root="data",
+        img_size=224,
+    )
+
+    batch = next(iter(loader))
+    assert isinstance(batch, (tuple, list)) and len(batch) == 2
+    imgs, labels = batch
+    assert imgs.shape == (4, 3, 224, 224), f"Expected imgs (4,3,224,224), got {tuple(imgs.shape)}"
+    assert labels.shape == (4,), f"Expected labels (4,), got {tuple(labels.shape)}"
+    print("Tiny-ImageNet loader OK:", tuple(imgs.shape), tuple(labels.shape))
+
 
 if __name__ == "__main__":
     print("Running dataloader tests...")
     check_data_dir()
     check_pretrain()
     check_eval()
+    check_tiny_imagenet_if_present()
     print("\nALL TESTS PASSED")

@@ -21,6 +21,16 @@ mae-project/
 ├── data/
 │   └── (empty; user downloads datasets here)
 │
+Tiny-ImageNet expected layout (no auto-download in this repo):
+```
+data/
+  tiny-imagenet-200/
+    wnids.txt
+    train/<wnid>/images/*.JPEG
+    val/images/*.JPEG
+    val/val_annotations.txt
+```
+
 ├── src/
 │   ├── __init__.py
 │   │

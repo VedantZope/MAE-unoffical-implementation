@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 from .cifar100 import build_cifar100
 from .stl10 import build_stl10
+from .tiny_imagenet import build_tiny_imagenet
 
 
 # mean std for imagenet -> Found online
@@ -70,6 +71,12 @@ def _build_dataset(
             transform=transform,
             download=True,
             is_pretrain=is_pretrain,
+        )
+    if name in ("tinyimagenet", "tiny-imagenet", "tiny_imagenet", "tiny"):
+        return build_tiny_imagenet(
+            data_root=data_root,
+            split=split,
+            transform=transform,
         )
 
     raise ValueError(f"Unknown dataset_name: {dataset_name}")
