@@ -136,5 +136,4 @@ conda run -n mae-compact python -m pytest -q
 ## Notes for Graders (TA/Instructor)
 - All experiments are driven by YAML configs under `configs/`.
 - The canonical outputs are in `experiments/` (logs + checkpoints).
-- The report source lives in `../ESE5460FinalProject/` (LaTeX).
-- W&B is used for tracking but defaults to **offline** mode so runs do not require cloud syncing.
+- The model weights can be found here: [Drive link](<drive-link>)
