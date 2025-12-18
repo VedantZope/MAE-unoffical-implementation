@@ -1,0 +1,17 @@
+name: mae-compact
+channels:
+  - pytorch
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - numpy
+  - tqdm
+  - matplotlib
+  - pyyaml
+  - pytest
+  - tensorboard
+  - pytorch
+  - torchvision
+  - pip:
+      - wandb

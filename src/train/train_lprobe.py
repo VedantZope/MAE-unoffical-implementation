@@ -62,6 +62,7 @@ def build_mae_from_args(args) -> MAEModel:
         embed_dim=args.embed_dim,
         decoder_dim=args.dec_dim,
         num_patches=num_patches,
+        patch_size=args.patch_size,
         depth=args.dec_depth,
         num_heads=args.dec_heads,
         mlp_ratio=args.mlp_ratio,

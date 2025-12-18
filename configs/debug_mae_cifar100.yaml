@@ -1,0 +1,42 @@
+dataset: cifar100
+data_root: data
+
+# Quick sanity run: few steps only
+img_size: 224
+patch_size: 16
+
+embed_dim: 192
+encoder_depth: 12
+encoder_heads: 3
+encoder_mlp_ratio: 4.0
+dropout: 0.0
+
+decoder_dim: 96
+decoder_depth: 2
+decoder_heads: 3
+decoder_mlp_ratio: 4.0
+
+mask_ratio: 0.75
+
+batch_size: 8
+epochs: 1
+lr: 0.00015
+min_lr: 0.0
+warmup_epochs: 0
+weight_decay: 0.05
+
+amp: true
+grad_accum_steps: 1
+
+num_workers: 0
+log_interval: 1
+max_steps_per_epoch: 10
+output_dir: experiments/debug_mae
+seed: 42
+norm_pix_loss: true
+
+use_wandb: true
+wandb_project: mae-compact
+wandb_run_name: debug_mae_cifar100
+wandb_tags: ["debug", "pretrain", "cifar100"]
+wandb_mode: online

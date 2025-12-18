@@ -7,6 +7,7 @@ class MAEDecoder(nn.Module):
             embed_dim=768, 
             decoder_dim=512, 
             num_patches=196, 
+            patch_size: int = 16,
             depth=4, 
             num_heads=8, 
             mlp_ratio=4.0, 
@@ -31,7 +32,8 @@ class MAEDecoder(nn.Module):
         # setting the decoder
         self.decoder = nn.TransformerEncoder(decoder_layer, num_layers=depth)
         # linear head to map output to pixels
-        self.head = nn.Linear(decoder_dim, 3 * 16 * 16)
+        patch_dim = 3 * patch_size * patch_size
+        self.head = nn.Linear(decoder_dim, patch_dim)
 
     def forward(self, x_visible, idx_keep, idx_original):
         # proj decoder dims
@@ -40,14 +42,17 @@ class MAEDecoder(nn.Module):
 
         # for n patches
         N = self.pos_embed.shape[1]
-        x_full = self.mask_token.repeat(B, N, 1)
+        # Keep dtype/device consistent under AMP/autocast
+        mask_token = self.mask_token.to(dtype=x_visible.dtype, device=x_visible.device)
+        pos_embed = self.pos_embed.to(dtype=x_visible.dtype, device=x_visible.device)
+        x_full = mask_token.repeat(B, N, 1)
 
         # scatter tokens that are visible to original pos
         # use expand to match decoder dim for indexing
         x_full.scatter_(1, idx_keep.unsqueeze(-1).expand(-1, -1, C_dec), x_visible)
 
         # add pos embeddings
-        x_full = x_full + self.pos_embed
+        x_full = x_full + pos_embed
 
         # decode: map to pix
         x_full = self.decoder(x_full)

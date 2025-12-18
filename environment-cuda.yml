@@ -1,0 +1,20 @@
+name: mae-compact
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - numpy
+  - tqdm
+  - matplotlib
+  - pyyaml
+  - pytest
+  - tensorboard
+  - pytorch
+  - torchvision
+  # If this fails due to driver/toolkit mismatch, use `environment-cpu.yml` instead.
+  - pytorch-cuda=12.1
+  - pip:
+      - wandb
