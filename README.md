@@ -87,21 +87,6 @@ Run a single config:
 python -u -m src.train.train_mae --config configs/pretraining/cifar100/mae_vit_tiny_cifar100_mask75_dec2.yaml
 ```
 
-Run all 6 CIFAR-100 ablations in parallel (skips GPU 2 by default):
-```bash
-bash scripts/launch_cifar100_ablations.sh
-```
-
-Run all 6 STL-10 ablations in parallel (skips GPU 2 by default):
-```bash
-bash scripts/launch_stl10_ablations.sh
-```
-
-Override GPU list (comma or space separated):
-```bash
-GPU_IDS="0,1,3,4,5,6" bash scripts/launch_cifar100_ablations.sh
-```
-
 Outputs:
 - checkpoints: `experiments/mae_pretrained/*.pth`
 - logs: `experiments/logs/mae_vit_tiny_*_mask*_dec*.log`
@@ -114,12 +99,6 @@ Run a single YAML:
 python -u -m src.train.train_linear_probe --config configs/linear_probing/cifar100/lprobe_cifar100_mask75_dec2.yaml
 ```
 
-Run 6 probes (one per checkpoint) in parallel (skips GPU 2 by default):
-```bash
-bash scripts/launch_linear_probe_from_ckpts.sh cifar100
-bash scripts/launch_linear_probe_from_ckpts.sh stl10
-```
-
 Outputs:
 - logs: `experiments/logs/*_lprobe_*.log`
 - best linear heads: `experiments/linear_probe/*.pth`
@@ -130,16 +109,6 @@ Outputs:
 Run a single YAML:
 ```bash
 python -u -m src.train.train_finetune --config configs/finetuning/cifar100/finetune_cifar100_mask75_dec4.yaml
-```
-
-Run a smaller set (best configs) in parallel:
-```bash
-bash scripts/launch_finetune_best.sh
-```
-
-Run the remaining grid in parallel (skips GPU 2 by default):
-```bash
-bash scripts/launch_finetune_remaining.sh
 ```
 
 Outputs:
